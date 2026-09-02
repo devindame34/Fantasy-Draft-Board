@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#090f1f">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Draft Board">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="stylesheet" href="styles.css?v=6.0.1">
+  <title>2026 Fantasy Draft Board</title>
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <div class="eyebrow">12-TEAM • HALF-PPR • 250 PLAYERS</div>
+      <h1>Draft Board <span class="version">v6.0</span></h1>
+    </div>
+    <button id="undoBtn" class="ghost compact" type="button" disabled>Undo</button>
+  </header>
+
+  <section class="draft-dashboard" aria-label="Draft status">
+    <div class="draft-stat">
+      <span class="draft-stat-label">CURRENT PICK</span>
+      <strong id="dashCurrentPick">1</strong>
+      <span id="dashRound" class="draft-stat-sub">R1 • 1.01</span>
+    </div>
+    <div class="draft-stat draft-stat-next">
+      <span class="draft-stat-label">YOUR NEXT PICK</span>
+      <strong id="dashNextPick">YOU'RE UP</strong>
+      <span id="dashUntil" class="draft-stat-sub">Make your pick</span>
+    </div>
+    <div class="draft-progress">
+      <div class="draft-progress-track"><div id="draftProgressFill" class="draft-progress-fill"></div></div>
+      <span id="draftProgressLabel">Round 1 • Pick 1 of 12</span>
+    </div>
+  </section>
+
+  <section class="toolbar" aria-label="Board filters">
+    <input id="searchInput" type="search" placeholder="Search player, team or position…" autocomplete="off">
+    <select id="positionFilter" aria-label="Position filter">
+      <option value="ALL">All pos.</option>
+      <option value="QB">QB</option>
+      <option value="RB">RB</option>
+      <option value="WR">WR</option>
+      <option value="TE">TE</option>
+      <option value="K">K</option>
+      <option value="DST">DST</option>
+    </select>
+    <select id="teamFilter" aria-label="Team filter">
+      <option value="ALL">All teams</option>
+    </select>
+  </section>
+
+  <section class="tag-filters" aria-label="Player tags">
+    <button class="tag-filter active" data-tag="ALL" type="button">All</button>
+    <button class="tag-filter" data-tag="MYGUY" type="button">My Guys</button>
+    <button class="tag-filter" data-tag="SLEEPER" type="button">Sleepers</button>
+    <button class="tag-filter" data-tag="RISKY" type="button">Risky</button>
+  </section>
+
+  <nav class="tabs" aria-label="Draft board views">
+    <button class="tab active" data-tab="board" type="button">Board</button>
+    <button class="tab" data-tab="favorites" type="button">★ Queue</button>
+    <button class="tab" data-tab="best" type="button">Best For Me</button>
+    <button class="tab" data-tab="roster" type="button">My Roster</button>
+    <button class="tab" data-tab="draftLog" type="button">Draft Log</button>
+    <button class="tab" data-tab="settings" type="button">Setup</button>
+  </nav>
+
+  <main>
+    <section id="boardView" class="view active">
+      <div id="boardList" class="player-list"></div>
+    </section>
+
+    <section id="favoritesView" class="view">
+      <div class="section-head">
+        <div><h2>Draft queue</h2><p>Star players you want to watch.</p></div>
+        <span id="favoriteCount" class="pill">0 saved</span>
+      </div>
+      <div id="favoritesList" class="player-list"></div>
+    </section>
+
+    <section id="bestView" class="view">
+      <div class="callout">
+        <strong>Rank stays the anchor. Context changes the order.</strong>
+        <p>Live Value adds roster fit, positional scarcity, ESPN/CBS projections, market timing, recent position runs and fall value. K/DST and a second quarterback stay suppressed until the proper rounds.</p>
+      </div>
+      <div id="needsSummary" class="needs"></div>
+      <div id="bestList" class="player-list"></div>
+    </section>
+
+    <section id="rosterView" class="view">
+      <div class="section-head">
+        <div><h2>My roster</h2><p>Shown in draft order.</p></div>
+        <span id="myPickCount" class="pill">0 picks</span>
+      </div>
+      <div id="rosterList" class="player-list"></div>
+    </section>
+
+    <section id="draftLogView" class="view">
+      <div class="section-head">
+        <div><h2>Draft log</h2><p>Every player marked mine or taken.</p></div>
+        <span id="draftLogCount" class="pill">0 selections</span>
+      </div>
+      <div id="draftLogList" class="draft-log"></div>
+    </section>
+
+    <section id="settingsView" class="view">
+      <div class="card">
+        <div class="card-kicker">SNAKE TRACKER</div>
+        <h2>Draft setup</h2>
+        <div class="grid2">
+          <label>League size
+            <input id="leagueSize" type="number" min="2" max="32" value="12">
+          </label>
+          <label>Your draft slot
+            <select id="draftSlot"></select>
+          </label>
+        </div>
+        <button id="saveDraftSetupBtn" class="primary wide" type="button">Save snake draft setup</button>
+        <div class="manual-pick-row">
+          <label>Current overall pick
+            <input id="manualCurrentPick" type="number" min="1" value="1">
+          </label>
+          <button id="setCurrentPickBtn" class="ghost" type="button">Set pick</button>
+        </div>
+        <p class="muted">The tracker advances whenever you mark a player. Set the overall pick manually if the room gets ahead of you.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-kicker">ROSTER-AWARE VALUE</div>
+        <h2>Lineup and bench</h2>
+        <div class="grid2 roster-grid">
+          <label>QB<input id="needQB" type="number" min="0" max="5" value="1"></label>
+          <label>RB<input id="needRB" type="number" min="0" max="10" value="2"></label>
+          <label>WR<input id="needWR" type="number" min="0" max="10" value="2"></label>
+          <label>TE<input id="needTE" type="number" min="0" max="5" value="1"></label>
+          <label>FLEX<input id="needFLEX" type="number" min="0" max="5" value="1"></label>
+          <label>K<input id="needK" type="number" min="0" max="3" value="1"></label>
+          <label>DST<input id="needDST" type="number" min="0" max="3" value="1"></label>
+          <label>Bench<input id="needBENCH" type="number" min="0" max="12" value="5"></label>
+        </div>
+        <button id="saveNeedsBtn" class="primary wide" type="button">Save roster settings</button>
+      </div>
+
+      <div class="card method-card">
+        <div class="card-kicker">V6.0 DATA MODEL</div>
+        <h2>What the numbers mean</h2>
+        <dl>
+          <div><dt>Our Rank</dt><dd>The curated half-PPR board; never replaced by ADP.</dd></div>
+          <div><dt>ADP / ADP~</dt><dd>Recent 12-team half-PPR market data; a tilde marks a news adjustment.</dd></div>
+          <div><dt>ECR</dt><dd>Expert-rank proxy used only where recent ADP is thin.</dd></div>
+          <div><dt>Projection</dt><dd>Average of available ESPN and CBS PPR projections.</dd></div>
+        </dl>
+        <p class="muted">Board and source snapshot: September 1, 2026. Tap any player for the complete rank, market, projection and Value breakdown.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-kicker">SAFETY COPY</div>
+        <h2>Backup</h2>
+        <p class="muted">The draft saves on this device. Imported backups restore statuses and settings onto the current v6 player data.</p>
+        <div class="button-row">
+          <button id="exportBtn" class="ghost" type="button">Export backup</button>
+          <label class="file-btn ghost">Import backup<input id="backupInput" type="file" accept=".json,application/json" hidden></label>
+        </div>
+      </div>
+
+      <div class="card danger-card">
+        <h2>Reset draft</h2>
+        <p class="muted">Clears drafted and favorite status. The v6 rankings and setup remain intact.</p>
+        <button id="resetDraftBtn" class="danger wide" type="button">Reset draft state</button>
+      </div>
+    </section>
+  </main>
+
+  <div id="actionSheet" class="sheet hidden" role="dialog" aria-modal="true" aria-label="Player details">
+    <div class="sheet-card">
+      <div class="sheet-scroll"><div id="sheetPlayer" class="sheet-player"></div></div>
+      <div class="sheet-actions">
+        <button id="draftMineBtn" class="mine" type="button">✓ I drafted this player</button>
+        <button id="draftOtherBtn" class="other" type="button">× Someone else drafted this player</button>
+        <button id="undraftBtn" class="ghost wide" type="button">Return to board</button>
+        <button id="cancelSheetBtn" class="text-btn" type="button">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="players.js?v=6.0.1"></script>
+  <script src="app.js?v=6.0.1"></script>
+</body>
+</html>

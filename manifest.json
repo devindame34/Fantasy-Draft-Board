@@ -1,0 +1,24 @@
+{
+  "name": "2026 Fantasy Draft Board v6.0",
+  "short_name": "Draft Board",
+  "description": "A 250-player half-PPR board with live snake-draft recommendations.",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#090f1f",
+  "theme_color": "#090f1f",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
